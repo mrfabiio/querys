@@ -1,0 +1,72 @@
+/* Projeto de Análise de dados sobre total de vendas de produtos, marcas e cliente. 
+O valor da venda precisa que seja maior ou igual a 100, o dia da venda 
+precisa estar entre uma data estipulada. Utilizei CTES como forma de reutilização de código 
+e facilitar a legibilidade.
+*/
+
+WITH dados_clientes as (
+    select 
+        c.id_cliente,
+        c.nome as cliente,
+        c.estado as estado
+    from 
+        clientes c
+    where c.estado = 'Rio de Janeiro'
+),
+Produto AS (     
+    SELECT 
+        SUM(vp.valor_venda) AS Total_Vendas,
+        p.nome_produto AS produto,
+        p.produto_id,
+        p.marca_id AS id_marca,
+        vp.data_venda,
+        nome_produto,
+        cliente
+    FROM Vendas vp 
+    LEFT JOIN produtos p ON vp.produto_id = p.produto_id
+    LEFT JOIN dados_clientes dc ON vp.id_cliente = dc.id_cliente
+    WHERE vp.data_venda BETWEEN '01/01/23' AND '04/01/23'
+    GROUP BY
+        p.nome_produto,
+        p.produto_id,
+        p.marca_id,
+        vp.data_venda,
+        cliente
+    HAVING SUM(vp.valor_venda) >= 100
+    
+),
+Marca AS (
+    SELECT 
+        m.nome_marca as Marca,
+        m.marca_id,
+        SUM(p.Total_Vendas) AS Total_Vendas_Marca,
+        p.data_venda,
+        p.id_marca,
+        p.produto_id,
+        p.nome_produto as Produto,
+        p.cliente
+    FROM marcas m
+    LEFT JOIN Produto p
+        ON m.marca_id = p.id_marca
+    WHERE p.data_venda BETWEEN '01/01/23' AND '04/01/23'
+    GROUP BY
+        m.nome_marca,
+        m.marca_id,
+        p.data_venda,
+        p.id_marca,
+        p.produto_id,
+        Produto,
+        p.cliente
+    HAVING SUM(p.Total_Vendas) >= 100
+)
+select  
+    cliente,
+    Produto,
+    Marca,
+    sum(Total_Vendas_Marca) Total_Vendas
+from Marca
+group by 
+    Produto, 
+    Marca,
+    cliente
+order by cliente
