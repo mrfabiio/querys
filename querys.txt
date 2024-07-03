@@ -1,0 +1,66 @@
+1) Selecionando todos os clientes que possuem valor de venda maior ou igual a 100:
+
+SELECT id_cliente, nome
+FROM clientes
+WHERE id_cliente IN (
+    SELECT id_cliente 
+    FROM vendas 
+    WHERE valor_venda >= 100
+);
+
+
+2) Selecionando todos os clientes que realizaram compras em um determinado período:
+
+SELECT id_cliente, nome
+FROM clientes c
+WHERE EXISTS (
+    SELECT 1 
+    FROM vendas v 
+    WHERE v.id_cliente = c.id_cliente
+    AND data_venda BETWEEN TO_DATE('2023-01-01', 'YYYY-MM-DD') AND TO_DATE('2023-01-03', 'YYYY-MM-DD')
+);
+
+
+3) Selecionando todos os clientes que possuem vendas maior que a média:
+
+SELECT c.id_cliente, c.nome
+FROM clientes c
+JOIN vendas v ON c.id_cliente = v.id_cliente
+WHERE v.valor_venda > (SELECT AVG(valor_venda) FROM vendas);
+
+
+
+4) Selecionando todos os clientes do Rio de Janeiro com vendas menor que a média:
+
+SELECT c.id_cliente, c.nome
+FROM clientes c
+JOIN vendas v ON c.id_cliente = v.id_cliente
+WHERE c.estado = 'Rio de Janeiro' 
+AND v.valor_venda < (SELECT AVG(valor_venda) FROM vendas);
+
+
+
+5) Selecionando todos os clientes que não realizaram compras:
+
+SELECT id_cliente, nome
+FROM clientes c
+WHERE NOT EXISTS (
+    SELECT 1 
+    FROM vendas v 
+    WHERE c.id_cliente = v.id_cliente
+);
+
+
+6) Selecionando todos os produtos que foram vendidos na tabela de vendas:
+
+SELECT nome_produto
+FROM produtos
+WHERE produto_id IN (
+    SELECT produto_id 
+    FROM vendas
+);
+
+
+
+
+
